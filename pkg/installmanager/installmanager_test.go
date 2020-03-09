@@ -430,18 +430,14 @@ last line with password in text`,
 			missingStrings: []string{"PaSsWoRd"},
 		},
 		{
-			name: "libvirt ssh connection error in console log",
-			sourceString: `
-FATAL failed to fetch Terraform Variables: failed to load asset "Install Config": invalid "install-config.yaml" file: platform.baremetal.libvirtURI: Internal error: could not connect to libvirt: virError(Code=38, Domain=7, Message='Cannot recv data: Permission denied, please try again.
-Permission denied, please try again.
-Permission denied (publickey,gssapi-keyex,gssapi-with-mic,password).: Connection reset by peer')
-`,
+			name:         "libvirt ssh connection error in console log",
+			sourceString: "Internal error: could not connect to libvirt: virError(Code=38, Domain=7, Message='Cannot recv data: Permission denied, please try again.\\r\\nPermission denied (publickey,gssapi-keyex,gssapi-with-mic,password)",
 			missingStrings: []string{
-				"Permission denied (publickey,gssapi-keyex,gssapi-with-mic,password).: Connection reset by peer')",
+				"Permission denied (publickey,gssapi-keyex,gssapi-with-mic,password)",
 			},
 			expectedStrings: []string{
-				`FATAL failed to fetch Terraform Variables: failed to load asset "Install Config": invalid "install-config.yaml" file: platform.baremetal.libvirtURI: Internal error: could not connect to libvirt: virError(Code=38, Domain=7, Message='Cannot recv data: Permission denied, please try again.`,
-				`Permission denied, please try again.`,
+				"Internal error: could not connect to libvirt: virError(Code=38, Domain=7",
+				"Permission denied, please try again.",
 			},
 		},
 	}

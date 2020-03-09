@@ -1260,9 +1260,16 @@ func updateClusterProvisionWithRetries(provision *hivev1.ClusterProvision, m *In
 }
 
 func cleanupLogOutput(fullLog string) string {
-	var cleanedString string
+	var cleanedString = fullLog
 
-	cleanedString = multiLineRedactLinesWithPassword.ReplaceAllString(fullLog, "REDACTED LINE OF OUTPUT")
+	// The console log may have carriage returns as well as newlines,
+	// and they may be escaped (this especially happens with the
+	// baremetal IPI installer when libvirt.so emits errors). Unescape
+	// the returns and newlines, then remove the carriage returns, so
+	// that the string is treated as multiple lines.
+	cleanedString = strings.ReplaceAll(cleanedString, "\\r", "\r")
+	cleanedString = strings.ReplaceAll(cleanedString, "\\n", "\n")
+	cleanedString = multiLineRedactLinesWithPassword.ReplaceAllString(cleanedString, "REDACTED LINE OF OUTPUT")
 
 	return cleanedString
 }
