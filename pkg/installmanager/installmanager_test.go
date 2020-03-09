@@ -434,7 +434,10 @@ last line with password in text`,
 		cleanedString := cleanupLogOutput(test.sourceString)
 
 		for _, testString := range test.missingStrings {
-			assert.False(t, strings.Contains(cleanedString, testString), "testing %v: unexpected string found after cleaning", test.name)
+			assert.False(t, strings.Contains(cleanedString, testString),
+				"testing %v: unexpected string found after cleaning",
+				test.name, testString)
+		}
 		}
 	}
 
