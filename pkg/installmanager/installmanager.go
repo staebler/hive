@@ -80,8 +80,7 @@ const (
 )
 
 var (
-	// multi-line mode regex that allows removing/mutating any line containing 'password' case-insensitive
-	multiLineRedactLinesWithPassword = regexp.MustCompile(`(?mi)^.*password.*$`)
+	passwordRedaction = regexp.MustCompile(`(?i)(password:\s?)[a-z0-9-]+`)
 )
 
 // InstallManager coordinates executing the openshift-install binary, modifying
@@ -1260,18 +1259,15 @@ func updateClusterProvisionWithRetries(provision *hivev1.ClusterProvision, m *In
 }
 
 func cleanupLogOutput(fullLog string) string {
-	var cleanedString = fullLog
-
-	// The console log may have carriage returns as well as newlines,
-	// and they may be escaped (this especially happens with the
-	// baremetal IPI installer when libvirt.so emits errors). Unescape
-	// the returns and newlines, then remove the carriage returns, so
-	// that the string is treated as multiple lines.
-	cleanedString = strings.ReplaceAll(cleanedString, "\\r", "\r")
-	cleanedString = strings.ReplaceAll(cleanedString, "\\n", "\n")
-	cleanedString = multiLineRedactLinesWithPassword.ReplaceAllString(cleanedString, "REDACTED LINE OF OUTPUT")
-
-	return cleanedString
+	const redacted = "[REDACTED]"
+	return passwordRedaction.ReplaceAllStringFunc(fullLog, func(s string) string{
+		submatches := passwordRedaction.FindStringSubmatch(s)
+		if len(submatches) < 2 {
+			// This should not happen. To be overly cautious, just redact the entire initial match.
+			return redacted
+		}
+		return submatches[1] + redacted
+	})
 }
 
 // isDirNonEmpty returns true if the directory exists and contains at least one file.
